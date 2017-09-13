@@ -448,23 +448,12 @@ def main(args):
     global DIM_Y
     global DIM_IMAGE
 
-    if args.use_sketch:
-        # 125 types of images
-        NUM_CLASSES = 125
-
-        # downsized images are 128 x 128
-        IMAGE_SIZE = 128
-        IMAGE_SHAPE = [128, 128]
-
-        DIM_Y = NUM_CLASSES
-        DIM_IMAGE = np.prod(IMAGE_SHAPE)
-
     # build dcgan
     model = DCGAN(
         DataDistribution(args.data_dir),
         GeneratorDistribution(),
         args.batch_size,
-        args.epoch_size,
+        args.num_epochs,
         args.learning_rate,
         args.decay_rate,
         args.out
@@ -479,16 +468,14 @@ def parse_args():
     parser.add_argument('--data_dir', type=str,
                         default='/tmp/tensorflow/mnist/input_data',
                         help='Directory for storing input data')
-    parser.add_argument('--use_sketch', action="store_true",
-                        help='true if using sketchy dataset, false (default) if using MNIST dataset')
-    parser.add_argument('--learning-rate', type=int, default=0.0002,
+    parser.add_argument('--learning-rate', type=int, default=0.0001,
                         help='the learning rate for training')
     parser.add_argument('--decay-rate', type=int, default=0.5,
                         help='the learning rate for training')
     parser.add_argument('--batch-size', type=int, default=128,
                         help='the batch size')
-    parser.add_argument('--epoch-size', type=int, default=100,
-                        help='size of each epoch')
+    parser.add_argument('--num-epochs', type=int, default=101,
+                        help='number of epochs')
     parser.add_argument('--out', type=str,
                         default=SAVE_DIR,
                         help='output location for writing samples from G')
@@ -497,10 +484,10 @@ def parse_args():
 
 def save_samples(directory, samples, epoch):
     # make save directories if needed
-    if not os.path.exists(directory + 'combined/'):
-        os.makedirs(directory + 'combined/')
     if not os.path.exists(directory):
         os.makedirs(directory)
+    if not os.path.exists('samples/'):
+        os.makedirs('samples/')
     for index in range(NUM_CLASSES):
         digit_directory = directory + str(index) + '/'
         if not os.path.exists(digit_directory):
@@ -511,7 +498,7 @@ def save_samples(directory, samples, epoch):
         imsave(directory + '%d/digit_%d_%03d.jpg' % (index, index, epoch), np.reshape(samples[index], IMAGE_SHAPE))
 
     # save one image with all ten samples, stacked vertically
-    imsave(directory + 'combined/combined_%03d.jpg' % epoch, np.reshape(samples, np.multiply(IMAGE_SHAPE,[NUM_CLASSES,1])))
+    imsave('samples/sample_%03d.jpg' % epoch, np.reshape(samples, np.multiply(IMAGE_SHAPE,[NUM_CLASSES,1])))
 
 
 if __name__ == '__main__':
